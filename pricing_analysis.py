@@ -95,6 +95,9 @@ def create_workbook(all_refs, file_data):
                 final_headers.append(cell["value"])
                 header_styles.append(cell)
 
+    # Add new columns
+    final_headers += ["Annual Volume/100", "x"]
+
     # Write headers
     ref_header_style = file_data[0][0][file_data[0][1]]
     cell = ws.cell(row=1, column=1, value="Reference Number")
@@ -108,6 +111,14 @@ def create_workbook(all_refs, file_data):
         cell.fill = h["fill"]
         cell.font = h["font"]
         cell.alignment = h["alignment"]
+        apply_border(cell)
+
+    # Add headers for new columns
+    new_headers = ["Annual Volume/100", "x"]
+    for i, new_header in enumerate(new_headers, start=len(header_styles) + 2):
+        cell = ws.cell(row=1, column=i, value=new_header)
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(horizontal="center", vertical="center")
         apply_border(cell)
 
     # Write data
@@ -135,7 +146,15 @@ def create_workbook(all_refs, file_data):
                         cell = ws.cell(row=row_idx, column=col_idx, value=None)
                         apply_border(cell)
                         col_idx += 1
+
+        # Add placeholders for new columns
+        ws.cell(row=row_idx, column=col_idx, value=None)
+        apply_border(ws.cell(row=row_idx, column=col_idx))
+        ws.cell(row=row_idx, column=col_idx + 1, value=None)
+        apply_border(ws.cell(row=row_idx, column=col_idx + 1))
+
     return wb
+
 
 # Download link
 def get_download_link_with_styles(wb):
