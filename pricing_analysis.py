@@ -86,10 +86,10 @@ def extract_tcp_data_by_reference(file):
     ws = wb.active
     rows = list(ws.iter_rows(values_only=False))
 
-    # Clean headers (strip spaces)
-    headers = [str(cell.value).strip() if cell.value else "" for cell in rows[0]]
+    # --- headers are in row 2 (index 1) ---
+    headers = [str(cell.value).strip() if cell.value else "" for cell in rows[1]]
 
-    # Detect reference column
+    # find reference column
     ref_col_idx = next(
         (idx for idx, val in enumerate(headers)
          if val and ("tcp" in val.lower() or "reference" in val.lower())),
@@ -98,18 +98,17 @@ def extract_tcp_data_by_reference(file):
     if ref_col_idx is None:
         raise ValueError("Neither 'TCP Number' nor 'Reference Number' column found in TCP file")
 
-    # Collect formatted rows into dict {ref: row_data}
+    # collect data from all rows after the header (row 3 onward)
     formatted_data = {}
-    for row in rows[1:]:
+    for row in rows[2:]:
         ref_val = str(row[ref_col_idx].value).strip() if row[ref_col_idx].value else None
         if not ref_val:
             continue
 
         row_data = {}
         for idx, cell in enumerate(row):
-            col_header = headers[idx]
+            col_header = headers[idx] if idx < len(headers) else f"Unnamed {idx}"
             row_data[col_header] = cell.value
-
         formatted_data[ref_val] = row_data
 
     return headers, ref_col_idx, formatted_data
